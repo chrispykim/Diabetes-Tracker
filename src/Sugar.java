@@ -85,14 +85,7 @@ public class Sugar {
     entryNumberPanel.add(buttonPanel, constr);
     entryNumberPanel.validate();
     
-    entryNumber.addActionListener(new ActionListener() {
-
-      @Override
-      public void actionPerformed(ActionEvent evt) {
-
-        viewData.doClick();
-      }
-    });
+    entryNumber.addActionListener(evt -> viewData.doClick());
     
     entryNumber.getDocument().addDocumentListener(new DocumentListener(){
     
@@ -131,23 +124,9 @@ public class Sugar {
     resetDate(d, df, date);
     newDataPanel.validate();
     
-    date.addActionListener(new ActionListener() {
+    date.addActionListener(evt -> sugarData.requestFocusInWindow());
     
-      @Override
-      public void actionPerformed(ActionEvent evt) {
-      
-        sugarData.requestFocusInWindow();
-      }
-    });
-    
-    sugarData.addActionListener(new ActionListener() {
-    
-      @Override
-      public void actionPerformed(ActionEvent evt) {
-      
-        enterData.doClick();
-      }
-    });
+    sugarData.addActionListener(evt -> enterData.doClick());
     
     sugarData.getDocument().addDocumentListener(new DocumentListener(){
     
@@ -172,159 +151,121 @@ public class Sugar {
     c.show(panelCont, "1");
   
     //from main menu to input # values  
-    prevDataButton.addActionListener(new ActionListener() {
-    
-      @Override
-      public void actionPerformed(ActionEvent evt) {
-      
-        c.show(panelCont, "4");
-        entryNumber.setText(null);
-        entryNumber.requestFocusInWindow();
-        count = 0; 
-        entries = 0;
-      }
+    prevDataButton.addActionListener(evt -> {
+
+      c.show(panelCont, "4");
+      entryNumber.setText(null);
+      entryNumber.requestFocusInWindow();
+      count = 0;
+      entries = 0;
     });
     
     //from main menu to new data entering
-    newDataButton.addActionListener(new ActionListener() {
-    
-      @Override
-      public void actionPerformed(ActionEvent evt) {
-      
-        c.show(panelCont, "3");
-        sugarData.setText(null);
-        resetDate(d, df, date);
-        date.requestFocusInWindow();
-      }
-    });   
+    newDataButton.addActionListener(evt -> {
+
+      c.show(panelCont, "3");
+      sugarData.setText(null);
+      resetDate(d, df, date);
+      date.requestFocusInWindow();
+    });
     
     //from input # values to graph
-    viewData.addActionListener(new ActionListener() {
-    
-      @Override
-      public void actionPerformed(ActionEvent evt) {
-      
-        entries = 0;
-        count = 0;
-      
-        try {
-        
-          entries = Integer.parseInt(entryNumber.getText());
-          InRead blah = new InRead(file_name);
-          dataTotal = blah.readFile();
-           
-          if (dataTotal.size() > entries) {
-          
-            count = dataTotal.size() - entries;
-          }
-          else count = 0;
-                    
-          JPanel prevDataGraph = new MyPanel(dataTotal, blah, count);
-          prevDataGraph.setLayout(new BorderLayout());
-          prevDataGraph.add(graphButtons, BorderLayout.NORTH);
-          prevDataGraph.validate();
-          panelCont.add(prevDataGraph, "2");
-          c.show(panelCont, "2");
+    viewData.addActionListener(evt -> {
+
+      entries = 0;
+      count = 0;
+
+      try {
+
+        entries = Integer.parseInt(entryNumber.getText());
+        InRead blah = new InRead(file_name);
+        dataTotal = blah.readFile();
+
+        if (dataTotal.size() > entries) {
+
+          count = dataTotal.size() - entries;
         }
-        catch(NumberFormatException e) {
-        
-          JOptionPane.showMessageDialog(null, "Enter a valid range", "ERROR",
-                                        JOptionPane.WARNING_MESSAGE);
-          c.show(panelCont, "4");
-          entryNumber.setText(null);
-          entryNumber.requestFocusInWindow();
-        }
+        else count = 0;
+
+        JPanel prevDataGraph = new MyPanel(dataTotal, blah, count);
+        prevDataGraph.setLayout(new BorderLayout());
+        prevDataGraph.add(graphButtons, BorderLayout.NORTH);
+        prevDataGraph.validate();
+        panelCont.add(prevDataGraph, "2");
+        c.show(panelCont, "2");
+      }
+      catch(NumberFormatException e) {
+
+        JOptionPane.showMessageDialog(null, "Enter a valid range", "ERROR",
+                                      JOptionPane.WARNING_MESSAGE);
+        c.show(panelCont, "4");
+        entryNumber.setText(null);
+        entryNumber.requestFocusInWindow();
       }
     });
     
     //from graph to input # values
-    goBack.addActionListener(new ActionListener() {
-    
-      @Override
-      public void actionPerformed(ActionEvent evt) {
-      
-        c.show(panelCont, "4");
-        entryNumber.setText(null);
-        entryNumber.requestFocusInWindow();
-        count = 0;
-        entries = 0;
-      }
+    goBack.addActionListener(evt -> {
+
+      c.show(panelCont, "4");
+      entryNumber.setText(null);
+      entryNumber.requestFocusInWindow();
+      count = 0;
+      entries = 0;
     });
         
     //from graph to main menu
-    returnToMain1.addActionListener(new ActionListener() {
-    
-      @Override
-      public void actionPerformed(ActionEvent evt) {
-      
-        c.show(panelCont, "1");
-      }
-    });
+    returnToMain1.addActionListener(evt -> c.show(panelCont, "1"));
     
     //from new data to view data
-    returnToMain2.addActionListener(new ActionListener() {
-    
-      @Override
-      public void actionPerformed(ActionEvent evt) {
-      
-        c.show(panelCont, "4");
-        entryNumber.setText(null);
-        entryNumber.requestFocusInWindow();
-        count = 0; 
-        entries = 0;
-      }
+    returnToMain2.addActionListener(evt -> {
+
+      c.show(panelCont, "4");
+      entryNumber.setText(null);
+      entryNumber.requestFocusInWindow();
+      count = 0;
+      entries = 0;
     });
     
     //from input # values to main menu
-    returnToMain3.addActionListener(new ActionListener() {
-    
-      @Override
-      public void actionPerformed(ActionEvent evt) {
-      
-        c.show(panelCont, "1");
-      }
-    });
+    returnToMain3.addActionListener(evt -> c.show(panelCont, "1"));
     
     //save data button
-    enterData.addActionListener(new ActionListener() {
-    
-      @Override
-      public void actionPerformed(ActionEvent evt) {
-      
-        str1 = date.getText();
-        str2 = sugarData.getText();
-        
-        if(!isValidDate(str1)) {
-        
-          JOptionPane.showMessageDialog(null, "Invalid Date Entered", "ERROR",
-                                        JOptionPane.WARNING_MESSAGE);
-          resetDate(d, df, date);
-          date.requestFocusInWindow();
-        }        
-        else if (str2.equals("")) {
-        
-          JOptionPane.showMessageDialog(null, "No Sugar Level Data Entered", "ERROR",
-                                        JOptionPane.WARNING_MESSAGE);
-          sugarData.requestFocusInWindow();
+    enterData.addActionListener(evt -> {
+
+      str1 = date.getText();
+      str2 = sugarData.getText();
+
+      if(!isValidDate(str1)) {
+
+        JOptionPane.showMessageDialog(null, "Invalid Date Entered", "ERROR",
+                                      JOptionPane.WARNING_MESSAGE);
+        resetDate(d, df, date);
+        date.requestFocusInWindow();
+      }
+      else if (str2.equals("")) {
+
+        JOptionPane.showMessageDialog(null, "No Sugar Level Data Entered", "ERROR",
+                                      JOptionPane.WARNING_MESSAGE);
+        sugarData.requestFocusInWindow();
+      }
+      else {
+
+        try {
+          WriteFile dateData = new WriteFile(file_name, true);
+          dateData.writeToFile(str1);
+          dateData.writeToFile(str2);
         }
-        else {
-        
-          try {
-            WriteFile dateData = new WriteFile(file_name, true);
-            dateData.writeToFile(str1);
-            dateData.writeToFile(str2);
-          }
-          catch(IOException e) {
-            JOptionPane.showMessageDialog(null, "Error writing to file", "ERROR",
-                                        JOptionPane.WARNING_MESSAGE);
-          }
-          
-          JOptionPane.showMessageDialog(null, "Data Saved", "CONFIRMATION", 
-                                        JOptionPane.INFORMATION_MESSAGE);
-          resetDate(d, df, date);
-          sugarData.setText(null);
-          date.requestFocusInWindow();
+        catch(IOException e) {
+          JOptionPane.showMessageDialog(null, "Error writing to file", "ERROR",
+                                      JOptionPane.WARNING_MESSAGE);
         }
+
+        JOptionPane.showMessageDialog(null, "Data Saved", "CONFIRMATION",
+                                      JOptionPane.INFORMATION_MESSAGE);
+        resetDate(d, df, date);
+        sugarData.setText(null);
+        date.requestFocusInWindow();
       }
     });
         
@@ -347,19 +288,11 @@ public class Sugar {
       System.exit(-1);
     }
   }
-  
-  private void printArray(ArrayList<Point> array) {
-  
-    for(int i = 0; i < array.size(); i++) {
-    
-      System.out.println(array.get(i).getX() + " " + array.get(i).getY());
-    }
-  }
-  
-  public boolean isValidDate(String date) {
+
+    public boolean isValidDate(String date) {
   
     DateFormat sdf = new java.text.SimpleDateFormat("yyyy/MM/dd");
-    Date testDate = null;
+    Date testDate;
     try 
     {
       testDate = sdf.parse(date);
@@ -376,12 +309,7 @@ public class Sugar {
   
   public static void main(String[] args){
   
-    SwingUtilities.invokeLater(new Runnable() {  
-      @Override
-      public void run() {   
-        new Sugar();
-      }
-    });
+    SwingUtilities.invokeLater(() -> new Sugar());
   }
    
 }
