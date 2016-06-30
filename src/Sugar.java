@@ -1,21 +1,16 @@
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
 import javax.swing.*;
-import javax.swing.event.*;
-import java.util.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.MaskFormatter;
-import java.text.ParseException;
-import javax.swing.JFormattedTextField;
-import java.lang.Object;
-import java.text.Format;
-import java.util.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import javax.swing.JOptionPane;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.awt.geom.Point2D;
-import java.awt.Point;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 public class Sugar {
 
@@ -91,10 +86,10 @@ public class Sugar {
     entryNumberPanel.validate();
     
     entryNumber.addActionListener(new ActionListener() {
-    
+
       @Override
       public void actionPerformed(ActionEvent evt) {
-      
+
         viewData.doClick();
       }
     });

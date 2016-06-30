@@ -1,7 +1,6 @@
 import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.io.IOException;
-import static java.lang.System.*;
+import java.io.PrintWriter;
 
 public class WriteFile {
 
