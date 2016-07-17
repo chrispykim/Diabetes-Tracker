@@ -5,8 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-
 
 public class InRead {
 
@@ -14,24 +12,19 @@ public class InRead {
   private int minY, maxY; 
   
   public InRead(String name) {
-  
     path = name;
   }
 
   public ArrayList<Point> readFile() {
-  
-    ArrayList<Point> outputArray = new ArrayList<Point>();
+    ArrayList<Point> outputArray = new ArrayList<>();
     int x, y, smallestY = Integer.MAX_VALUE, biggestY = 0;
   
     try {
-    
       FileReader fr = new FileReader(path);
       BufferedReader br = new BufferedReader(fr);
       
-      String str = null;
-      str = br.readLine();
+      String str = br.readLine();
       while (str != null) {
-      
         str = str.replaceAll("/", "");
         x = Integer.parseInt(str);
         str = br.readLine();
@@ -46,21 +39,18 @@ public class InRead {
       maxY = biggestY;
       br.close();
       
-      Collections.sort(outputArray, new Comparator<Point>() {
-      
-        public int compare (Point a, Point b) {
-        
-          if (a.x < b.x) {
-            return -1;
-          }
-          else if (a.x > b.x) {
-            return 1;
-          }
-          else {
-            return 0;
-          }
-          
+      Collections.sort(outputArray, (a, b) -> {
+
+        if (a.x < b.x) {
+          return -1;
         }
+        else if (a.x > b.x) {
+          return 1;
+        }
+        else {
+          return 0;
+        }
+
       });
       
       WriteFile stuff = new WriteFile(path, false);
@@ -68,23 +58,21 @@ public class InRead {
       WriteFile stuff2 = new WriteFile(path, true);
       for(int i = 0; i < outputArray.size(); i++) {
        
-        String date = new String();
+        String date;
         date = String.valueOf((int)outputArray.get(i).getX());
         date = date.substring(0, 4) + "/" + date.substring(4,6) + "/" + date.substring(6,8);
         stuff2.writeToFile(date);
-        String sugar = new String();
+        String sugar;
         sugar = String.valueOf((int)outputArray.get(i).getY());
         stuff2.writeToFile(sugar); 
       }     
     }
     catch (NumberFormatException e) {
-    
       JOptionPane.showMessageDialog(null, "Please check text file", "UNSPECIFIED ERROR",
                                     JOptionPane.WARNING_MESSAGE);
       System.exit(-1);
     }
     catch (IOException e) {
-    
       JOptionPane.showMessageDialog(null, "File Not Found", "ERROR",
                                     JOptionPane.WARNING_MESSAGE);
     }
@@ -93,12 +81,10 @@ public class InRead {
   }
   
   public int minY() {
-  
     return minY;
   }
   
   public int maxY() {
-  
     return maxY;
   }
   

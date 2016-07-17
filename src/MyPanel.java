@@ -5,6 +5,7 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
+
 public class MyPanel extends JPanel implements MouseListener{
 
   ArrayList<Rectangle2D> rects = new ArrayList<Rectangle2D>();
@@ -111,4 +112,4 @@ public class MyPanel extends JPanel implements MouseListener{
     g2d.draw(rects.get(n));
     g2d.setStroke(oldStroke);
   }
-  }
+}
