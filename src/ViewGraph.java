@@ -10,5 +10,9 @@ class ViewGraph {
 
     private static void printArray(ArrayList<String> data) {
         data.forEach(System.out::println);
+        String[] maxMin = Data.calculateMinMax(data).split("-");
+        int max = Integer.parseInt(maxMin[0]);
+        int min = Integer.parseInt(maxMin[1]);
+        System.out.println("max: " + max + ", min: " + min);
     }
 }

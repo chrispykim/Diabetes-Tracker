@@ -82,7 +82,7 @@ public class Controller extends Application {
         VBox startLayout = new VBox(20);
 
         Label mainMenuLabel = new Label("Main Menu");
-        mainMenuLabel.setFont(Font.font("Cambria", 30));
+        mainMenuLabel.setFont(Font.font(mainMenuLabel.getFont().getName(), 30));
 
         Button addData = new Button("Enter Data");
         addData.setOnAction(e -> {

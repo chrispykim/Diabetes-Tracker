@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.channels.InterruptedByTimeoutException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
@@ -67,5 +68,25 @@ class Data {
         }
 
         return data;
+    }
+
+    static String calculateMinMax(ArrayList<String> data) {
+        StringBuilder stringBuilder = new StringBuilder();
+        int count = 0;
+        int max = Integer.MIN_VALUE;
+        int min = Integer.MAX_VALUE;
+
+        for (String s : data) {
+            if ((count % 2) != 0) {
+                int curr = Integer.parseInt(s);
+                max = (curr > max) ? curr : max;
+                min = (curr < min) ? curr : min;
+            }
+            count++;
+        }
+
+        stringBuilder.append(max).append("-").append(min);
+
+        return stringBuilder.toString();
     }
 }
