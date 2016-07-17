@@ -1,10 +1,11 @@
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -17,7 +18,6 @@ import java.util.Locale;
  * Controller class that handles user events
  */
 public class Controller extends Application {
-    private static final String DATA_FILE = "dateFile.txt";
     private Stage window;
     private Scene start, enterData, viewData;
     private DatePicker datePicker;
@@ -54,18 +54,26 @@ public class Controller extends Application {
     private void setUpEnterDataScene() {
         VBox enterDataLayout = new VBox(20);
 
-        HBox addDataPane = new HBox(10);
+        HBox addDatePane = new HBox(10);
         Label enterDateLabel = new Label("Enter date: ");
         datePicker = new DatePicker(LocalDate.now());
-        addDataPane.getChildren().addAll(enterDateLabel, datePicker);
-        addDataPane.setAlignment(Pos.CENTER);
+        addDatePane.getChildren().addAll(enterDateLabel, datePicker);
+        addDatePane.setAlignment(Pos.CENTER);
+
+        HBox addGlucosePane = new HBox(10);
+        TextField glucoseLevel = new TextField();
+        Label enterGlucoseLabel = new Label("Enter the glucose level: ");
+        addGlucosePane.getChildren().addAll(enterGlucoseLabel, glucoseLevel);
+        addGlucosePane.setAlignment(Pos.CENTER);
+
+        Button saveData = new Button("Save");
+        saveData.setOnAction(e -> Data.saveData(datePicker.getValue(), glucoseLevel.getText()));
 
         Button backFromEnterData = new Button("Back");
         backFromEnterData.setOnAction(e -> window.setScene(start));
-        Button saveData = new Button("Save");
-        saveData.setOnAction(e -> saveData(datePicker.getValue()));
 
-        enterDataLayout.getChildren().addAll(addDataPane, saveData, backFromEnterData);
+        enterDataLayout.setPadding(new Insets(20, 20, 20, 20));
+        enterDataLayout.getChildren().addAll(addDatePane, addGlucosePane, saveData, backFromEnterData);
         enterDataLayout.setAlignment(Pos.CENTER);
         enterData = new Scene(enterDataLayout, 600, 500);
     }
@@ -80,16 +88,17 @@ public class Controller extends Application {
         addData.setOnAction(e -> {
             window.setScene(enterData);
             datePicker.setEditable(false);
+            datePicker.setValue(LocalDate.now());
         });
+
         Button viewGraph = new Button("View data");
-        viewGraph.setOnAction(e -> window.setScene(viewData));
+        viewGraph.setOnAction(e -> {
+            window.setScene(viewData);
+            ViewGraph.render(Data.retrieveData());
+        });
 
         startLayout.setAlignment(Pos.CENTER);
         startLayout.getChildren().addAll(mainMenuLabel, addData, viewGraph);
         start = new Scene(startLayout, 600, 500);
-    }
-
-    private void saveData(LocalDate value) {
-        System.out.println(value);
     }
 }
