@@ -1,5 +1,4 @@
 import java.io.*;
-import java.nio.channels.InterruptedByTimeoutException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
@@ -14,10 +13,17 @@ class Data {
     private static final String DATA_FILE = "dateFile.txt";
     private static final String DEFAULT_DIRECTORY = System.getProperty("user.dir");
     private static final int SIX_MONTHS = 360;
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
-    static void saveData(LocalDate value, String text) {
+    private ArrayList<String> data;
+
+    Data() {
+        data = new ArrayList<>();
+        retrieveData();
+    }
+
+    void saveData(LocalDate value, String text) {
         File destFile = new File(DEFAULT_DIRECTORY, DATA_FILE);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
         if (!destFile.exists()) {
             Alert.display("Error", "Data file is nonexistent. Executable was saved in wrong directory");
@@ -28,7 +34,7 @@ class Data {
             throw new IllegalStateException();
         }
         if (alreadyContainsDate(value.format(formatter))) {
-            Alert.display("Error", "Already entered data for this date");
+            Alert.displayWithSave("Error", "Already entered data for this date", destFile, value, text, this);
             throw new IllegalStateException();
         }
 
@@ -36,12 +42,34 @@ class Data {
             Files.write(destFile.toPath(), Arrays.asList(value.format(formatter), text), StandardOpenOption.APPEND);
         } catch (IOException e) {
             Alert.display("Error", "Could not save data");
+            return;
         }
 
         Alert.display("Success", "Saved data");
     }
 
-    private static boolean alreadyContainsDate(String date) {
+    void replaceData(File destFile, LocalDate value, String text) {
+        for (int i = 0; i < data.size(); i++) {
+            if (data.get(i).equals(value.format(formatter))) {
+                data.set(i, value.format(formatter));
+                data.set(i+1, text);
+                break;
+            }
+        }
+
+        try {
+            Files.delete(destFile.toPath());
+            Files.write(destFile.toPath(), data, StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            Alert.display("Error", "Could not save data");
+            return;
+        }
+
+
+        Alert.display("Success", "Saved data");
+    }
+
+    private boolean alreadyContainsDate(String date) {
         for (String s : retrieveData()) {
             if (s.equals(date)) {
                 return true;
@@ -50,8 +78,8 @@ class Data {
         return false;
     }
 
-    static ArrayList<String> retrieveData() {
-        ArrayList<String> data = new ArrayList<>();
+    ArrayList<String> retrieveData() {
+        data.clear();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(DATA_FILE))) {
             String line;
@@ -63,14 +91,14 @@ class Data {
             data.clear();
         }
 
-        while (data.size() > SIX_MONTHS) {
+        /*while (data.size() > SIX_MONTHS) {
             data.remove(0);
-        }
+        }*/
 
         return data;
     }
 
-    static String calculateMinMax(ArrayList<String> data) {
+    String calculateMinMax(ArrayList<String> data) {
         StringBuilder stringBuilder = new StringBuilder();
         int count = 0;
         int max = Integer.MIN_VALUE;

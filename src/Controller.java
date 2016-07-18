@@ -21,6 +21,7 @@ public class Controller extends Application {
     private Stage window;
     private Scene start, enterData, viewData;
     private DatePicker datePicker;
+    private Data data;
 
     public static void main(String[] args) {
         launch(args);
@@ -30,6 +31,7 @@ public class Controller extends Application {
     public void start(Stage primaryStage) throws Exception {
         Locale.setDefault(Locale.KOREAN);
         window = primaryStage;
+        data = new Data();
         // set up UI logic
         setUpStartScene();
         setUpEnterDataScene();
@@ -41,12 +43,21 @@ public class Controller extends Application {
     }
 
     private void setUpViewDataScene() {
-        VBox viewDataLayout = new VBox();
+        VBox viewDataLayout = new VBox(20);
+
+        HBox selectEntriesPane = new HBox(10);
+        TextField numEntries = new TextField();
+        Label enterNumEntries = new Label("Enter number of days to display (ending at today's date): ");
+        selectEntriesPane.getChildren().addAll(enterNumEntries, numEntries);
+        selectEntriesPane.setAlignment(Pos.CENTER);
+
+        Button viewDataButton = new Button("View trends");
+        viewDataButton.setOnAction(e -> ViewGraph.render(data, numEntries.getText()));
 
         Button backFromViewData = new Button("Back");
         backFromViewData.setOnAction(e -> window.setScene(start));
 
-        viewDataLayout.getChildren().addAll(backFromViewData);
+        viewDataLayout.getChildren().addAll(selectEntriesPane, viewDataButton, backFromViewData);
         viewDataLayout.setAlignment(Pos.CENTER);
         viewData = new Scene(viewDataLayout, 600, 500);
     }
@@ -67,7 +78,7 @@ public class Controller extends Application {
         addGlucosePane.setAlignment(Pos.CENTER);
 
         Button saveData = new Button("Save");
-        saveData.setOnAction(e -> Data.saveData(datePicker.getValue(), glucoseLevel.getText()));
+        saveData.setOnAction(e -> data.saveData(datePicker.getValue(), glucoseLevel.getText()));
 
         Button backFromEnterData = new Button("Back");
         backFromEnterData.setOnAction(e -> window.setScene(start));
@@ -92,10 +103,7 @@ public class Controller extends Application {
         });
 
         Button viewGraph = new Button("View data");
-        viewGraph.setOnAction(e -> {
-            window.setScene(viewData);
-            ViewGraph.render(Data.retrieveData());
-        });
+        viewGraph.setOnAction(e -> window.setScene(viewData));
 
         startLayout.setAlignment(Pos.CENTER);
         startLayout.getChildren().addAll(mainMenuLabel, addData, viewGraph);
