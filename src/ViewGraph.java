@@ -9,6 +9,7 @@ class ViewGraph {
     private static final String DEFAULT_DIRECTORY = System.getProperty("user.dir");
 
     static void render(Data data, String numEntries) {
+        data.retrieveData();
         File destFile = new File(DEFAULT_DIRECTORY, DATA_FILE);
 
         if (!destFile.exists()) {
@@ -20,11 +21,11 @@ class ViewGraph {
             throw new IllegalStateException();
         }
 
-        String[] maxMin = data.calculateMinMax(data.retrieveData()).split("-");
+        String[] maxMin = data.calculateMinMax(data.getData()).split("-");
         int max = Integer.parseInt(maxMin[0]);
         int min = Integer.parseInt(maxMin[1]);
         System.out.println("max: " + max + ", min: " + min);
-        printArray(data.retrieveData());
+        printArray(data.getData());
         System.out.println("num entries: " + numEntries);
     }
 

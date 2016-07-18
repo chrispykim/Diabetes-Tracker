@@ -15,6 +15,10 @@ class Data {
     private static final int SIX_MONTHS = 360;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
+    ArrayList<String> getData() {
+        return data;
+    }
+
     private ArrayList<String> data;
 
     Data() {
@@ -33,9 +37,11 @@ class Data {
             Alert.display("Error", "Glucose level was not entered. Please enter a value before saving");
             throw new IllegalStateException();
         }
+
+        retrieveData();
         if (alreadyContainsDate(value.format(formatter))) {
             Alert.displayWithSave("Error", "Already entered data for this date", destFile, value, text, this);
-            throw new IllegalStateException();
+            return;
         }
 
         try {
@@ -70,7 +76,7 @@ class Data {
     }
 
     private boolean alreadyContainsDate(String date) {
-        for (String s : retrieveData()) {
+        for (String s : data) {
             if (s.equals(date)) {
                 return true;
             }
@@ -81,7 +87,8 @@ class Data {
     ArrayList<String> retrieveData() {
         data.clear();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(DATA_FILE))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(
+                new File(DEFAULT_DIRECTORY, DATA_FILE).getAbsolutePath()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 data.add(line);
