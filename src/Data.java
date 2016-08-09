@@ -1,51 +1,57 @@
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * Stores date/glucose level data and provides API for storing and retrieving from text file
  */
-class Data {
+public class Data {
     private static final String DATA_FILE = "dateFile.txt";
     private static final String DEFAULT_DIRECTORY = System.getProperty("user.dir");
-    private static final int SIX_MONTHS = 360;
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+    public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
+    private static Path dataFilePath = Paths.get(DEFAULT_DIRECTORY, DATA_FILE);
+    private boolean replace = false;
+    public void setReplace(boolean replace) {
+        this.replace = replace;
+    }
+    private ArrayList<String> data = new ArrayList<>();
     ArrayList<String> getData() {
         return data;
     }
 
-    private ArrayList<String> data;
-
     Data() {
-        data = new ArrayList<>();
         retrieveData();
     }
 
     void saveData(LocalDate value, String text) {
-        File destFile = new File(DEFAULT_DIRECTORY, DATA_FILE);
-
-        if (!destFile.exists()) {
+        if (!Files.exists(dataFilePath)) {
             Alert.display("Error", "Data file is nonexistent. Executable was saved in wrong directory");
             throw new IllegalStateException();
         }
-        if (text.equals("")) {
-            Alert.display("Error", "Glucose level was not entered. Please enter a value before saving");
+        if (text.equals("") || !text.matches("^-?\\d+$")) {
+            Alert.display("Error", "Glucose level was not entered correctly. Please enter a valid value before saving");
             throw new IllegalStateException();
         }
-
-        retrieveData();
         if (alreadyContainsDate(value.format(formatter))) {
-            Alert.displayWithSave("Error", "Already entered data for this date", destFile, value, text, this);
-            return;
+            Alert.displayWithSave("Error", "Already entered data for this date", this);
+            if (replace) {
+                replaceData(value, text, data);
+            }
+            else {
+                data.add(String.format("%s-%s", value.format(formatter), text));
+            }
+            replace = false;
         }
 
         try {
-            Files.write(destFile.toPath(), Arrays.asList(value.format(formatter), text), StandardOpenOption.APPEND);
+            Files.delete(dataFilePath);
+            Files.write(dataFilePath, data);
         } catch (IOException e) {
             Alert.display("Error", "Could not save data");
             return;
@@ -54,73 +60,60 @@ class Data {
         Alert.display("Success", "Saved data");
     }
 
-    void replaceData(File destFile, LocalDate value, String text) {
+    private void replaceData(LocalDate value, String text, ArrayList<String> data) {
+        if (!Files.exists(dataFilePath)) {
+            Alert.display("Error", "Data file is missing");
+            return;
+        }
+
+        String newDate = value.format(formatter);
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).equals(value.format(formatter))) {
-                data.set(i, value.format(formatter));
-                data.set(i+1, text);
+            String oldDate = data.get(i).split("-")[0];
+            if (oldDate.equals(newDate)) {
+                data.set(i, String.format("%s-%s", newDate, text));
                 break;
             }
         }
-
-        try {
-            Files.delete(destFile.toPath());
-            Files.write(destFile.toPath(), data, StandardOpenOption.CREATE);
-        } catch (IOException e) {
-            Alert.display("Error", "Could not save data");
-            return;
-        }
-
-
-        Alert.display("Success", "Saved data");
     }
 
     private boolean alreadyContainsDate(String date) {
+        retrieveData();
+
         for (String s : data) {
-            if (s.equals(date)) {
+            String currDate = s.split("-")[0];
+            if (currDate.equals(date)) {
                 return true;
             }
         }
         return false;
     }
 
-    ArrayList<String> retrieveData() {
+    void retrieveData() {
         data.clear();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(
-                new File(DEFAULT_DIRECTORY, DATA_FILE).getAbsolutePath()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                data.add(line);
-            }
+        try {
+            List<String> temp = Files.readAllLines(dataFilePath);
+            data.addAll(temp);
         } catch (IOException e) {
             Alert.display("Error", "Data file is nonexistent or corrupted.");
             data.clear();
+            System.exit(1);
         }
-
-        /*while (data.size() > SIX_MONTHS) {
-            data.remove(0);
-        }*/
-
-        return data;
     }
 
-    String calculateMinMax(ArrayList<String> data) {
+    String calculateMinMax() {
         StringBuilder stringBuilder = new StringBuilder();
-        int count = 0;
-        int max = Integer.MIN_VALUE;
-        int min = Integer.MAX_VALUE;
 
-        for (String s : data) {
-            if ((count % 2) != 0) {
-                int curr = Integer.parseInt(s);
-                max = (curr > max) ? curr : max;
-                min = (curr < min) ? curr : min;
-            }
-            count++;
-        }
+        data.sort((o1, o2) -> {
+            if (LocalDate.parse(o1.split("-")[0],formatter).isBefore(LocalDate.parse(o2.split("-")[0],formatter)))
+                return -1;
+            if (LocalDate.parse(o1.split("-")[0],formatter).isAfter(LocalDate.parse(o2.split("-")[0],formatter)))
+                return 1;
+            return 0;
+        });
 
-        stringBuilder.append(max).append("-").append(min);
+        String from = (data.size() > 31) ? data.get(data.size()-31) : data.get(0);
+        stringBuilder.append(from).append("&").append(data.get(data.size()-1));
 
         return stringBuilder.toString();
     }

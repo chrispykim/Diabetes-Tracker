@@ -8,9 +8,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.File;
-import java.time.LocalDate;
-
 /**
  * Alert Box
  */
@@ -39,7 +36,7 @@ class Alert {
         window.showAndWait();
     }
 
-    static void displayWithSave(String title, String message, File destFile, LocalDate value, String text, Data data) {
+    static int displayWithSave(String title, String message, Data data) {
         Stage window = new Stage();
 
         //Block events to other windows
@@ -54,7 +51,7 @@ class Alert {
         closeButton.setOnAction(e -> window.close());
         Button saveButton = new Button("Replace existing entry");
         saveButton.setOnAction(e -> {
-            data.replaceData(destFile, value, text);
+            data.setReplace(true);
             window.close();
         });
         HBox buttons = new HBox(10);
@@ -70,5 +67,7 @@ class Alert {
         Scene scene = new Scene(layout);
         window.setScene(scene);
         window.showAndWait();
+
+        return 0;
     }
 }

@@ -2,16 +2,15 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Locale;
 
 /**
@@ -20,8 +19,11 @@ import java.util.Locale;
 public class Controller extends Application {
     private Stage window;
     private Scene start, enterData, viewData;
-    private DatePicker datePicker;
+    private DatePicker datePicker, datePickerFrom, datePickerTo;
     private Data data;
+    private TextField glucoseLevel;
+    private Button addData;
+    private Button viewGraph;
 
     public static void main(String[] args) {
         launch(args);
@@ -46,20 +48,62 @@ public class Controller extends Application {
         VBox viewDataLayout = new VBox(20);
 
         HBox selectEntriesPane = new HBox(10);
-        TextField numEntries = new TextField();
-        Label enterNumEntries = new Label("Enter number of days to display (ending at today's date): ");
-        selectEntriesPane.getChildren().addAll(enterNumEntries, numEntries);
+        setUpDatePickers();
+        final Callback<DatePicker, DateCell> dayCellFactory = new Callback<DatePicker, DateCell>() {
+            @Override
+            public DateCell call(final DatePicker datePicker) {
+                return new DateCell() {
+                    @Override
+                    public void updateItem(LocalDate item, boolean empty) {
+                        super.updateItem(item, empty);
+
+                        if (item.isAfter(LocalDate.now())) {
+                            setDisable(true);
+                            setStyle("-fx-background-color: #ffc0cb;");
+                        }
+                    }
+                };
+            }
+        };
+        datePickerTo.setDayCellFactory(dayCellFactory);
+        Label enterNumEntries1 = new Label("View data from");
+        Label enterNumEntries2 = new Label("to");
+        selectEntriesPane.getChildren().addAll(enterNumEntries1, datePickerFrom, enterNumEntries2, datePickerTo);
         selectEntriesPane.setAlignment(Pos.CENTER);
 
         Button viewDataButton = new Button("View trends");
-        viewDataButton.setOnAction(e -> ViewGraph.render(data, numEntries.getText()));
+        viewDataButton.setOnAction(e -> {
+            if (datePickerFrom.getValue().isBefore(datePickerTo.getValue())) {
+                data.retrieveData();
+                ViewGraph.render(data, datePickerFrom.getValue(), datePickerTo.getValue());
+            }
+            else {
+                Alert.display("Error", "Invalid date range");
+                datePickerFrom.setValue(LocalDate.now().minusMonths(1));
+                datePickerTo.setValue(LocalDate.now());
+                datePickerFrom.requestFocus();
+            }
+        });
 
         Button backFromViewData = new Button("Back");
-        backFromViewData.setOnAction(e -> window.setScene(start));
+        backFromViewData.setOnAction(e -> {
+            window.setScene(start);
+            addData.requestFocus();
+        });
 
         viewDataLayout.getChildren().addAll(selectEntriesPane, viewDataButton, backFromViewData);
         viewDataLayout.setAlignment(Pos.CENTER);
         viewData = new Scene(viewDataLayout, 600, 500);
+    }
+
+    private void setUpDatePickers() {
+        String[] minMax = data.calculateMinMax().split("&");
+        LocalDate from = LocalDate.parse(minMax[0].split("-")[0],Data.formatter);
+        LocalDate to = LocalDate.parse(minMax[1].split("-")[0],Data.formatter);
+        datePickerFrom = new DatePicker(from);
+        datePickerTo = new DatePicker(to);
+        datePickerFrom.setEditable(false);
+        datePickerTo.setEditable(false);
     }
 
     private void setUpEnterDataScene() {
@@ -72,7 +116,7 @@ public class Controller extends Application {
         addDatePane.setAlignment(Pos.CENTER);
 
         HBox addGlucosePane = new HBox(10);
-        TextField glucoseLevel = new TextField();
+        glucoseLevel = new TextField();
         Label enterGlucoseLabel = new Label("Enter the glucose level: ");
         addGlucosePane.getChildren().addAll(enterGlucoseLabel, glucoseLevel);
         addGlucosePane.setAlignment(Pos.CENTER);
@@ -81,7 +125,10 @@ public class Controller extends Application {
         saveData.setOnAction(e -> data.saveData(datePicker.getValue(), glucoseLevel.getText()));
 
         Button backFromEnterData = new Button("Back");
-        backFromEnterData.setOnAction(e -> window.setScene(start));
+        backFromEnterData.setOnAction(e -> {
+            window.setScene(start);
+            viewGraph.requestFocus();
+        });
 
         enterDataLayout.setPadding(new Insets(20, 20, 20, 20));
         enterDataLayout.getChildren().addAll(addDatePane, addGlucosePane, saveData, backFromEnterData);
@@ -95,15 +142,22 @@ public class Controller extends Application {
         Label mainMenuLabel = new Label("Main Menu");
         mainMenuLabel.setFont(Font.font(mainMenuLabel.getFont().getName(), 30));
 
-        Button addData = new Button("Enter Data");
+        addData = new Button("Enter Data");
         addData.setOnAction(e -> {
             window.setScene(enterData);
             datePicker.setEditable(false);
             datePicker.setValue(LocalDate.now());
+            glucoseLevel.clear();
+            glucoseLevel.requestFocus();
         });
 
-        Button viewGraph = new Button("View data");
-        viewGraph.setOnAction(e -> window.setScene(viewData));
+        viewGraph = new Button("View data");
+        viewGraph.setOnAction(e -> {
+            window.setScene(viewData);
+            data.retrieveData();
+            setUpDatePickers();
+            datePickerFrom.requestFocus();
+        });
 
         startLayout.setAlignment(Pos.CENTER);
         startLayout.getChildren().addAll(mainMenuLabel, addData, viewGraph);
