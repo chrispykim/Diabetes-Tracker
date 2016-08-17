@@ -10,20 +10,17 @@ import java.util.List;
 /**
  * Stores date/glucose level data and provides API for storing and retrieving from text file
  */
-public class Data {
+class Data {
     private static final String DATA_FILE = "dateFile.txt";
     private static final String DEFAULT_DIRECTORY = System.getProperty("user.dir");
-    public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+    static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
     private static Path dataFilePath = Paths.get(DEFAULT_DIRECTORY, DATA_FILE);
     private boolean replace = false;
-    public void setReplace(boolean replace) {
+    void setReplace(boolean replace) {
         this.replace = replace;
     }
     private ArrayList<String> data = new ArrayList<>();
-    ArrayList<String> getData() {
-        return data;
-    }
 
     Data() {
         retrieveData();
@@ -50,7 +47,7 @@ public class Data {
         }
 
         try {
-            Files.delete(dataFilePath);
+            Files.deleteIfExists(dataFilePath);
             Files.write(dataFilePath, data);
         } catch (IOException e) {
             Alert.display("Error", "Could not save data");
@@ -94,6 +91,13 @@ public class Data {
         try {
             List<String> temp = Files.readAllLines(dataFilePath);
             data.addAll(temp);
+            data.sort((o1, o2) -> {
+                if (LocalDate.parse(o1.split("-")[0],formatter).isBefore(LocalDate.parse(o2.split("-")[0],formatter)))
+                    return -1;
+                if (LocalDate.parse(o1.split("-")[0],formatter).isAfter(LocalDate.parse(o2.split("-")[0],formatter)))
+                    return 1;
+                return 0;
+            });
         } catch (IOException e) {
             Alert.display("Error", "Data file is nonexistent or corrupted.");
             data.clear();
@@ -101,20 +105,28 @@ public class Data {
         }
     }
 
-    String calculateMinMax() {
-        StringBuilder stringBuilder = new StringBuilder();
+    List<String> calculateRange() {
+        int start = (data.size() > 31) ? data.size()-31 : 0;
 
-        data.sort((o1, o2) -> {
-            if (LocalDate.parse(o1.split("-")[0],formatter).isBefore(LocalDate.parse(o2.split("-")[0],formatter)))
-                return -1;
-            if (LocalDate.parse(o1.split("-")[0],formatter).isAfter(LocalDate.parse(o2.split("-")[0],formatter)))
-                return 1;
-            return 0;
-        });
+        return data.subList(start, data.size());
+    }
 
-        String from = (data.size() > 31) ? data.get(data.size()-31) : data.get(0);
-        stringBuilder.append(from).append("&").append(data.get(data.size()-1));
-
-        return stringBuilder.toString();
+    List<String> calculateRange(LocalDate from, LocalDate to) {
+        int start=0,end=data.size();
+        for (int i=0; i<data.size(); i++) {
+            String currDate = data.get(i).split("-")[0];
+            if (LocalDate.parse(currDate, formatter).isAfter(from) || LocalDate.parse(currDate, formatter).isEqual(from)) {
+                start = i;
+                break;
+            }
+        }
+        for (int i=0; i<data.size(); i++) {
+            String currDate = data.get(i).split("-")[0];
+            if (LocalDate.parse(currDate, formatter).isAfter(to) || LocalDate.parse(currDate, formatter).isEqual(to)) {
+                end = i;
+                break;
+            }
+        }
+        return data.subList(start, end);
     }
 }

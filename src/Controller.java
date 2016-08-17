@@ -2,15 +2,19 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
+import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -18,7 +22,7 @@ import java.util.Locale;
  */
 public class Controller extends Application {
     private Stage window;
-    private Scene start, enterData, viewData;
+    private Scene start, enterData, viewData, chartView;
     private DatePicker datePicker, datePickerFrom, datePickerTo;
     private Data data;
     private TextField glucoseLevel;
@@ -37,6 +41,8 @@ public class Controller extends Application {
         // set up UI logic
         setUpStartScene();
         setUpEnterDataScene();
+        datePickerFrom = new DatePicker();
+        datePickerTo = new DatePicker();
         setUpViewDataScene();
         // initialize
         window.setScene(start);
@@ -75,13 +81,25 @@ public class Controller extends Application {
         viewDataButton.setOnAction(e -> {
             if (datePickerFrom.getValue().isBefore(datePickerTo.getValue())) {
                 data.retrieveData();
-                ViewGraph.render(data, datePickerFrom.getValue(), datePickerTo.getValue());
+                try {
+                    VBox chartViewBox = new VBox(20);
+                    Button backFromViewData = new Button("Back");
+                    backFromViewData.setOnAction(e1 -> {
+                        window.setScene(viewData);
+                        addData.requestFocus();
+                    });
+                    LineChart<Date,Number> chart = ViewGraph.render(data, datePickerFrom.getValue(), datePickerTo.getValue());
+                    chartViewBox.getChildren().addAll(chart, backFromViewData);
+                    chartViewBox.setAlignment(Pos.CENTER);
+                    VBox.setVgrow(chart, Priority.ALWAYS);
+                    window.setScene(new Scene(chartViewBox, 600, 500));
+                } catch (ParseException e1) {
+                    e1.printStackTrace();
+                }
             }
             else {
                 Alert.display("Error", "Invalid date range");
-                datePickerFrom.setValue(LocalDate.now().minusMonths(1));
-                datePickerTo.setValue(LocalDate.now());
-                datePickerFrom.requestFocus();
+                setUpDatePickers();
             }
         });
 
@@ -97,13 +115,14 @@ public class Controller extends Application {
     }
 
     private void setUpDatePickers() {
-        String[] minMax = data.calculateMinMax().split("&");
-        LocalDate from = LocalDate.parse(minMax[0].split("-")[0],Data.formatter);
-        LocalDate to = LocalDate.parse(minMax[1].split("-")[0],Data.formatter);
-        datePickerFrom = new DatePicker(from);
-        datePickerTo = new DatePicker(to);
+        List<String> range = data.calculateRange();
+        LocalDate fromDate = LocalDate.parse(range.get(0).split("-")[0], Data.formatter);
+        LocalDate toDate = LocalDate.parse(range.get(range.size() - 1).split("-")[0], Data.formatter);
+        datePickerFrom.setValue(fromDate);
+        datePickerTo.setValue(toDate);
         datePickerFrom.setEditable(false);
         datePickerTo.setEditable(false);
+        datePickerFrom.requestFocus();
     }
 
     private void setUpEnterDataScene() {
@@ -122,7 +141,9 @@ public class Controller extends Application {
         addGlucosePane.setAlignment(Pos.CENTER);
 
         Button saveData = new Button("Save");
-        saveData.setOnAction(e -> data.saveData(datePicker.getValue(), glucoseLevel.getText()));
+        saveData.setOnAction(e ->
+                data.saveData(datePicker.getValue(), glucoseLevel.getText())
+        );
 
         Button backFromEnterData = new Button("Back");
         backFromEnterData.setOnAction(e -> {
@@ -156,7 +177,6 @@ public class Controller extends Application {
             window.setScene(viewData);
             data.retrieveData();
             setUpDatePickers();
-            datePickerFrom.requestFocus();
         });
 
         startLayout.setAlignment(Pos.CENTER);
