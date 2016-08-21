@@ -22,7 +22,9 @@ import java.util.Locale;
  */
 public class Controller extends Application {
     private Stage window;
-    private Scene start, enterData, viewData, chartView;
+    private Scene start;
+    private Scene enterData;
+    private Scene viewData;
     private DatePicker datePicker, datePickerFrom, datePickerTo;
     private Data data;
     private TextField glucoseLevel;
@@ -92,7 +94,11 @@ public class Controller extends Application {
                     chartViewBox.getChildren().addAll(chart, backFromViewData);
                     chartViewBox.setAlignment(Pos.CENTER);
                     VBox.setVgrow(chart, Priority.ALWAYS);
-                    window.setScene(new Scene(chartViewBox, 600, 500));
+                    chartViewBox.setPadding(new Insets(20, 20, 20, 0));
+                    Scene viewChart = new Scene(chartViewBox, 600, 500);
+                    window.setScene(viewChart);
+                    window.setFullScreen(true);
+                    window.setMaximized(true);
                 } catch (ParseException e1) {
                     e1.printStackTrace();
                 }
@@ -105,6 +111,9 @@ public class Controller extends Application {
 
         Button backFromViewData = new Button("Back");
         backFromViewData.setOnAction(e -> {
+            window.setMaximized(false);
+            window.setFullScreen(false);
+            window.centerOnScreen();
             window.setScene(start);
             addData.requestFocus();
         });

@@ -47,8 +47,11 @@ class Alert {
         Label label = new Label();
         label.setText(message);
 
-        Button closeButton = new Button("Close this window");
-        closeButton.setOnAction(e -> window.close());
+        Button closeButton = new Button("Back");
+        closeButton.setOnAction(e -> {
+            data.setReplace(false);
+            window.close();
+        });
         Button saveButton = new Button("Replace existing entry");
         saveButton.setOnAction(e -> {
             data.setReplace(true);

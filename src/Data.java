@@ -16,7 +16,7 @@ class Data {
     static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
     private static Path dataFilePath = Paths.get(DEFAULT_DIRECTORY, DATA_FILE);
-    private boolean replace = false;
+    private boolean replace;
     void setReplace(boolean replace) {
         this.replace = replace;
     }
@@ -37,13 +37,14 @@ class Data {
         }
         if (alreadyContainsDate(value.format(formatter))) {
             Alert.displayWithSave("Error", "Already entered data for this date", this);
+
             if (replace) {
                 replaceData(value, text, data);
+            } else {
+                return;
             }
-            else {
-                data.add(String.format("%s-%s", value.format(formatter), text));
-            }
-            replace = false;
+        } else {
+            data.add(String.format("%s-%s", value.format(formatter), text));
         }
 
         try {
@@ -58,11 +59,6 @@ class Data {
     }
 
     private void replaceData(LocalDate value, String text, ArrayList<String> data) {
-        if (!Files.exists(dataFilePath)) {
-            Alert.display("Error", "Data file is missing");
-            return;
-        }
-
         String newDate = value.format(formatter);
         for (int i = 0; i < data.size(); i++) {
             String oldDate = data.get(i).split("-")[0];
@@ -112,7 +108,7 @@ class Data {
     }
 
     List<String> calculateRange(LocalDate from, LocalDate to) {
-        int start=0,end=data.size();
+        int start=0,end=data.size()+1;
         for (int i=0; i<data.size(); i++) {
             String currDate = data.get(i).split("-")[0];
             if (LocalDate.parse(currDate, formatter).isAfter(from) || LocalDate.parse(currDate, formatter).isEqual(from)) {
@@ -127,6 +123,6 @@ class Data {
                 break;
             }
         }
-        return data.subList(start, end);
+        return data.subList(start, end+1);
     }
 }
