@@ -29,20 +29,20 @@ class ViewGraph {
         xAxis.setLabel("Date");
         yAxis.setLabel("Glucose level");
         LineChart<Date,Number> lineChart = new LineChart<>(xAxis, yAxis);
-        lineChart.setTitle("Data from " + from + " to " + to);
+        lineChart.setTitle("Data from " + from + " to " + to + ". (Hover over points to see data)");
 
         XYChart.Series<Date,Number> series = new XYChart.Series<>();
-        series.setName("Hover mouse over points to see value");
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         for (String s : records) {
             series.getData().add(new XYChart.Data(dateFormat.parse(s.split("-")[0]), Integer.parseInt(s.split("-")[1])));
         }
         lineChart.getData().add(series);
+        lineChart.setLegendVisible(false);
 
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         for (XYChart.Series<Date, Number> s : lineChart.getData()) {
             for (XYChart.Data<Date, Number> d : s.getData()) {
-                Tooltip.install(d.getNode(), new Tooltip(df.format(d.getXValue()) + "\n" + "Glucose Level: " + d.getYValue()));
+                Tooltip.install(d.getNode(), new Tooltip("Date: " + df.format(d.getXValue()) + "\n" + "Glucose Level: " + d.getYValue()));
                 d.getNode().setOnMouseEntered(event -> d.getNode().getStyleClass().add("onHover"));
                 d.getNode().setOnMouseExited(event -> d.getNode().getStyleClass().remove("onHover"));
             }
@@ -65,11 +65,11 @@ class ViewGraph {
             for (XYChart.Data<Date, Number> d : s.getData()) {
                 StringBuilder style = new StringBuilder();
                 if (d.getYValue().floatValue() < MINIMUM) {
-                    style.append("-fx-stroke: blue; -fx-background-color: blue, white; ");
+                    style.append("-fx-stroke: blue; -fx-background-color: blue, blue; ");
                 } else if (d.getYValue().floatValue() < MAXIMUM) {
-                    style.append("-fx-stroke: green; -fx-background-color: green, white; ");
+                    style.append("-fx-stroke: green; -fx-background-color: green, green; ");
                 } else {
-                    style.append("-fx-stroke: red; -fx-background-color: red, white; ");
+                    style.append("-fx-stroke: red; -fx-background-color: red, red; ");
                 }
 
                 d.getNode().setStyle(style.toString());

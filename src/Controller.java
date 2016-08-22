@@ -1,13 +1,18 @@
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -84,21 +89,46 @@ public class Controller extends Application {
             if (datePickerFrom.getValue().isBefore(datePickerTo.getValue())) {
                 data.retrieveData();
                 try {
-                    VBox chartViewBox = new VBox(20);
+                    VBox chartViewBox = new VBox(10);
+
+                    HBox legend = new HBox(20);
+                    HBox lowBox = new HBox(5);
+                    Circle low = new Circle(5, Color.BLUE);
+                    Label lowLabel = new Label("Lower than 100");
+                    lowBox.getChildren().addAll(low, lowLabel);
+                    lowBox.setAlignment(Pos.CENTER);
+                    HBox goodBox = new HBox(5);
+                    Circle good = new Circle(5, Color.GREEN);
+                    Label goodLabel= new Label("Between 100 and 120");
+                    goodBox.getChildren().addAll(good, goodLabel);
+                    goodBox.setAlignment(Pos.CENTER);
+                    HBox highBox = new HBox(5);
+                    Circle high = new Circle(5, Color.RED);
+                    Label highLabel = new Label("Over 120");
+                    highBox.getChildren().addAll(high, highLabel);
+                    highBox.setAlignment(Pos.CENTER);
+                    legend.getChildren().addAll(lowBox, goodBox, highBox);
+                    legend.setAlignment(Pos.CENTER);
+
                     Button backFromViewData = new Button("Back");
                     backFromViewData.setOnAction(e1 -> {
                         window.setScene(viewData);
                         addData.requestFocus();
+                        window.centerOnScreen();
                     });
+
                     LineChart<Date,Number> chart = ViewGraph.render(data, datePickerFrom.getValue(), datePickerTo.getValue());
-                    chartViewBox.getChildren().addAll(chart, backFromViewData);
+
+                    chartViewBox.getChildren().addAll(chart, legend, backFromViewData);
                     chartViewBox.setAlignment(Pos.CENTER);
                     VBox.setVgrow(chart, Priority.ALWAYS);
                     chartViewBox.setPadding(new Insets(20, 20, 20, 0));
-                    Scene viewChart = new Scene(chartViewBox, 600, 500);
+
+                    Rectangle2D screenSize = Screen.getPrimary().getVisualBounds();
+                    Scene viewChart = new Scene(chartViewBox, screenSize.getWidth(), screenSize.getHeight());
+                    window.setX(0);
+                    window.setY(0);
                     window.setScene(viewChart);
-                    window.setFullScreen(true);
-                    window.setMaximized(true);
                 } catch (ParseException e1) {
                     e1.printStackTrace();
                 }
@@ -111,9 +141,6 @@ public class Controller extends Application {
 
         Button backFromViewData = new Button("Back");
         backFromViewData.setOnAction(e -> {
-            window.setMaximized(false);
-            window.setFullScreen(false);
-            window.centerOnScreen();
             window.setScene(start);
             addData.requestFocus();
         });
